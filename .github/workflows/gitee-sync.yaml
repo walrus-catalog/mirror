@@ -1,0 +1,44 @@
+name: Gitee Sync
+
+on:
+  schedule:
+    # evenry 30 minutes.
+    - cron: "*/30 * * * *"
+
+concurrency:
+  group: ${{ github.workflow}}
+  cancel-in-progress: true
+
+jobs:
+  run:
+    name: Run
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source codes
+      uses: actions/checkout@v1
+
+    - name: Get Time
+      id: get-time
+      run: |
+        echo "::set-output name=date::$(/bin/date -u "+%Y%m%d%H%M%S")"
+      shell: bash
+
+    - name: Cache src repos
+      uses: actions/cache@v1
+      id: cache
+      with:
+        path: ${{ github.workspace }}/hub-mirror-cache
+        key: ${{ runner.os }}-hub-repos-cache-${{ steps.get-time.outputs.date }}
+        restore-keys: ${{ runner.os }}-hub-repos-cache
+
+    - name: Mirror Github to Gitee
+      uses: ./.
+      with:
+        src: github/walrus-catalog
+        dst: gitee/walrus-catalog-test
+        dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+        dst_token:  ${{ secrets.GITEE_TOKEN }}
+        black_list: "mirror"
+        account_type: org
+        force_update: true
+        cache_path: /github/workspace/hub-mirror-cache
