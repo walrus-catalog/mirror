@@ -1,8 +1,8 @@
 name: Gitee Sync
 
 on:
+  workflow_dispatch:
   schedule:
-    # evenry 30 minutes.
     - cron: "*/30 * * * *"
 
 concurrency:
@@ -32,13 +32,13 @@ jobs:
         restore-keys: ${{ runner.os }}-hub-repos-cache
 
     - name: Mirror Github to Gitee
-      uses: ./.
+      uses: Yikun/hub-mirror-action@master
       with:
         src: github/walrus-catalog
-        dst: gitee/walrus-catalog-test
+        dst: gitee/walrus-catalog
         dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
         dst_token:  ${{ secrets.GITEE_TOKEN }}
         black_list: "mirror"
         account_type: org
         force_update: true
-        cache_path: /github/workspace/hub-mirror-cache
+        cache_path: ${{ github.workspace }}/hub-mirror-cache
