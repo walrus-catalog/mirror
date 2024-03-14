@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source codes
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
 
     - name: Get Time
       id: get-time
@@ -24,12 +24,15 @@ jobs:
       shell: bash
 
     - name: Cache src repos
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       id: cache
       with:
         path: ${{ github.workspace }}/hub-mirror-cache
         key: ${{ runner.os }}-hub-repos-cache-${{ steps.get-time.outputs.date }}
         restore-keys: ${{ runner.os }}-hub-repos-cache
+
+    - name: Fix permissions
+      run: git config --global --add safe.directory /github/workspace
 
     - name: Mirror Github to Gitee
       uses: Yikun/hub-mirror-action@master
@@ -38,7 +41,7 @@ jobs:
         dst: gitee/walrus-catalog
         dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
         dst_token:  ${{ secrets.GITEE_TOKEN }}
-        black_list: "mirror"
+        black_list: "mirror,rds,alicloud-rds,aws-rds,rds-seeder,webservice"
         account_type: org
         force_update: true
         cache_path: ${{ github.workspace }}/hub-mirror-cache
